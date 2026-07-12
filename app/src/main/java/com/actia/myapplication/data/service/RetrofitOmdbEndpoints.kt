@@ -2,7 +2,6 @@ package com.actia.myapplication.data.service
 
 import com.actia.myapplication.data.repository.response.ItemDTO
 import com.actia.myapplication.data.repository.response.SearchResultDTO
-import retrofit2.Call
 import retrofit2.http.*
 
 
@@ -16,11 +15,11 @@ interface RetrofitOmdbEndpoints {
         "Content-Language: en-US"
     )
     @GET("/?r=json")
-    fun getItemsByTitle(
+    suspend fun getItemsByTitle(
 
         @Query("apikey") apikey:String,
         @Query("s") title: String
-    ): Call<SearchResultDTO>
+    ): SearchResultDTO
 
     @Headers(
         "Content-Type:application/json",
@@ -30,10 +29,10 @@ interface RetrofitOmdbEndpoints {
         "Content-Language: en-US"
     )
     @GET("/?r=json")
-    fun getItemByImdb(
+    suspend fun getItemByImdb(
         @Query("apikey") apikey:String,
         @Query("i") imdb: String
-    ): Call<ItemDTO>
+    ): ItemDTO
 
 
     @Headers(
@@ -44,9 +43,9 @@ interface RetrofitOmdbEndpoints {
         "Content-Language: en-US"
     )
     @GET("/?r=json")
-    fun getItemByTitle(
+    suspend fun getItemByTitle(
 
         @Query("apikey") apikey:String,
         @Query("t") title: String
-    ): Call<ItemDTO>
+    ): ItemDTO
 }

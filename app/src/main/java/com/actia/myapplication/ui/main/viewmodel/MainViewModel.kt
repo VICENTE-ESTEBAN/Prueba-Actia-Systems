@@ -5,7 +5,8 @@ import android.util.Log
 import androidx.databinding.ObservableArrayList
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
+import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
 import com.actia.myapplication.data.domain.model.DetailItem
 import com.actia.myapplication.data.domain.model.Item
 import com.actia.myapplication.data.domain.model.Result
@@ -16,9 +17,9 @@ import com.actia.myapplication.ui.base.viewmodel.BaseViewModel
 import com.actia.myapplication.util.Constants
 import com.actia.myapplication.util.Constants.SHOW_ALL_YEARS
 import com.actia.myapplication.util.IdlingResourceCounter.countingIdlingResource
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.rxkotlin.addTo
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import org.koin.core.component.KoinApiExtension
 import org.koin.core.component.inject
 
@@ -42,16 +43,14 @@ class MainViewModel(application: Application) : BaseViewModel(application)
     private val getFullListItemsLiveData: MutableLiveData<List<Item>?> = MutableLiveData(emptyList())
 
 
-    val getItemsLiveData :LiveData<List<Item>> = Transformations.map(selectedYearLiveData)
-    {
-            yearSelected ->
+    val getItemsLiveData :LiveData<List<Item>> = selectedYearLiveData.map { yearSelected ->
         val years = getYearsLiveData
-        (if (years.isNotEmpty() && yearSelected<years.size) {
+        (if (years.isNotEmpty() && yearSelected != null && yearSelected < years.size) {
             val year = years[yearSelected]
             filterItemsByYear(year)
         } else {
             getFullListItemsLiveData.value
-        })
+        }) ?: emptyList()
     }
 
     private val _hasErrorOnRequestiveData: MutableLiveData<Boolean> = MutableLiveData(false)
@@ -70,14 +69,14 @@ class MainViewModel(application: Application) : BaseViewModel(application)
 
         countingIdlingResource.increment()
 
-        getItemsUseCase.execute(Constants.APIKEY, title)
-            .subscribeOn(Schedulers.computation())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                handleGetItemsUseCase(it)
-                countingIdlingResource.decrement()
-            }
-            .addTo(disposables)
+        viewModelScope.launch {
+            getItemsUseCase.execute(Constants.APIKEY, title)
+                .flowOn(Dispatchers.IO)
+                .collect {
+                    handleGetItemsUseCase(it)
+                    countingIdlingResource.decrement()
+                }
+        }
     }
 
     fun canGetDetail(data:Item?):Boolean{
@@ -95,14 +94,14 @@ class MainViewModel(application: Application) : BaseViewModel(application)
 
     private fun getDetailItemByImdb(imdb:String) {
         countingIdlingResource.increment()
-        getDetailItemByImdbUseCase.execute(Constants.APIKEY, imdb)
-            .subscribeOn(Schedulers.computation())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                handleGetDetailItemUseCase(it)
-                countingIdlingResource.decrement()
-            }
-            .addTo(disposables)
+        viewModelScope.launch {
+            getDetailItemByImdbUseCase.execute(Constants.APIKEY, imdb)
+                .flowOn(Dispatchers.IO)
+                .collect {
+                    handleGetDetailItemUseCase(it)
+                    countingIdlingResource.decrement()
+                }
+        }
     }
 
     private fun getYearsFromItem(): List<String> {
@@ -126,14 +125,14 @@ class MainViewModel(application: Application) : BaseViewModel(application)
     private fun getDetailItemByTitle(title:String) {
         countingIdlingResource.increment()
 
-        getDetailItemByTitleUseCase.execute(Constants.APIKEY, title)
-            .subscribeOn(Schedulers.computation())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                handleGetDetailItemUseCase(it)
-                countingIdlingResource.decrement()
-            }
-            .addTo(disposables)
+        viewModelScope.launch {
+            getDetailItemByTitleUseCase.execute(Constants.APIKEY, title)
+                .flowOn(Dispatchers.IO)
+                .collect {
+                    handleGetDetailItemUseCase(it)
+                    countingIdlingResource.decrement()
+                }
+        }
     }
 
     private fun handleGetDetailItemUseCase(result: Result<DetailItem>) {
@@ -177,5 +176,3 @@ class MainViewModel(application: Application) : BaseViewModel(application)
         _hasErrorOnRequestiveData.value = true
     }
 }
-
-

@@ -5,9 +5,6 @@ import com.actia.myapplication.data.domain.model.Result
 import com.actia.myapplication.data.repository.mappers.helpers.Mapper
 import com.actia.myapplication.data.repository.response.ItemDTO
 import com.actia.myapplication.data.service.RetrofitOmdbEndpoints
-import io.reactivex.Single
-import retrofit2.Call
-import retrofit2.Response
 
 
 class DetailItemRepositoryAPIImpl(
@@ -15,45 +12,21 @@ class DetailItemRepositoryAPIImpl(
     private val itemDataMapper: Mapper<ItemDTO, DetailItem>
 ) : DetailItemRepositoryAPI
 {
-    override fun getItemByImdb(apiKey:String, imdb: String): Single<Result<DetailItem>> {
-        return Single.create { emitter ->
-            val call: Call<ItemDTO> = itemApiService.getItemByImdb(apiKey, imdb)
-
-            val response: Response<ItemDTO> = call.execute()
-
-            if (!emitter.isDisposed) {
-                if (response.isSuccessful && response.body() != null) {
-
-                   emitter.onSuccess(Result.Success(mapItems(response.body()!!)))
-
-                } else {
-                    // Handle error
-                    val errorBody: String? = response.errorBody()?.string()
-
-                    emitter.onError(Throwable(errorBody))
-                }
-            }
+    override suspend fun getItemByImdb(apiKey:String, imdb: String): Result<DetailItem> {
+        return try {
+            val response = itemApiService.getItemByImdb(apiKey, imdb)
+            Result.Success(mapItems(response))
+        } catch (e: Exception) {
+            Result.Failure(e)
         }
     }
 
-    override fun getItemByTitle(apiKey:String, title: String): Single<Result<DetailItem>> {
-        return Single.create { emitter ->
-            val call: Call<ItemDTO> = itemApiService.getItemByTitle(apiKey, title)
-
-            val response: Response<ItemDTO> = call.execute()
-
-            if (!emitter.isDisposed) {
-                if (response.isSuccessful && response.body() != null) {
-
-                    emitter.onSuccess(Result.Success(mapItems(response.body()!!)))
-
-                } else {
-                    // Handle error
-                    val errorBody: String? = response.errorBody()?.string()
-
-                    emitter.onError(Throwable(errorBody))
-                }
-            }
+    override suspend fun getItemByTitle(apiKey:String, title: String): Result<DetailItem> {
+        return try {
+            val response = itemApiService.getItemByTitle(apiKey, title)
+            Result.Success(mapItems(response))
+        } catch (e: Exception) {
+            Result.Failure(e)
         }
     }
 
