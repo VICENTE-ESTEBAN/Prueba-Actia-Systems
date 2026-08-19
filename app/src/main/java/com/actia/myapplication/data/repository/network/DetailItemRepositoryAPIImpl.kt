@@ -17,6 +17,7 @@ class DetailItemRepositoryAPIImpl(
             val response = itemApiService.getItemByImdb(apiKey, imdb)
             Result.Success(mapItems(response))
         } catch (e: Exception) {
+            println("DetailItemRepositoryAPIImpl: $e")
             Result.Failure(e)
         }
     }
@@ -26,6 +27,7 @@ class DetailItemRepositoryAPIImpl(
             val response = itemApiService.getItemByTitle(apiKey, title)
             Result.Success(mapItems(response))
         } catch (e: Exception) {
+            println("DetailItemRepositoryAPIImpl: $e")
             Result.Failure(e)
         }
     }

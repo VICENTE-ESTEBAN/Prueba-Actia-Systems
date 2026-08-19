@@ -10,12 +10,13 @@ import com.actia.myapplication.R
 import com.actia.myapplication.databinding.FragmentMainBinding
 import com.actia.myapplication.ui.main.viewmodel.MainViewModel
 import com.actia.myapplication.util.hideKeyboard
-import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
+
 
 class MainFragment : Fragment() {
     private lateinit var binding: FragmentMainBinding
 
-    private val mViewModel: MainViewModel by sharedViewModel()
+    private val mViewModel: MainViewModel by activityViewModel()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

@@ -1,19 +1,17 @@
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
+    id 'com.android.legacy-kapt'
+    id 'org.jetbrains.kotlin.plugin.compose'
 }
-apply plugin: "kotlin-kapt"
-
-
 
 android {
     namespace 'com.actia.myapplication'
-    compileSdk 34
+    compileSdk 37
 
     defaultConfig {
         applicationId "com.actia.myapplication"
-        minSdk 28
-        targetSdk 34
+        minSdk 34
+        targetSdk 37
         versionCode 1
         versionName "1.0"
 
@@ -26,95 +24,177 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = '1.8'
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 
-
-    // Enables data binding.
     buildFeatures {
         dataBinding true
         viewBinding true
+        compose true
     }
 }
 
 dependencies {
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.5.3'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.5.3'
-    implementation 'androidx.test.espresso:espresso-idling-resource:3.5.0'
-    def lifecycle_version = "2.6.2"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
+    implementation 'androidx.test.espresso:espresso-idling-resource:3.7.0'
+    implementation 'androidx.test.uiautomator:uiautomator:2.4.0'
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"
+
+    // ============================================================
+    // Compose
+    // ============================================================
+
+    def composeBom = platform('androidx.compose:compose-bom:2026.06.00')
+
+    implementation composeBom
+    androidTestImplementation composeBom
+
+    implementation 'androidx.compose.foundation:foundation'
+    implementation 'androidx.compose.foundation:foundation-layout'
+    implementation 'androidx.compose.material3:material3'
+    implementation 'androidx.compose.material:material-icons-core'
+    implementation 'androidx.compose.runtime:runtime'
+    implementation 'androidx.compose.runtime:runtime-livedata'
+    implementation 'androidx.compose.ui:ui'
+    implementation 'androidx.compose.ui:ui-graphics'
+    implementation 'androidx.compose.ui:ui-tooling-preview'
+    implementation 'androidx.compose.material3.adaptive:adaptive'
+
+    debugImplementation 'androidx.compose.ui:ui-tooling'
+    debugImplementation 'androidx.compose.ui:ui-test-manifest'
+
+    androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
+
+    implementation 'androidx.activity:activity-compose:1.13.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0'
+
+
+    // ============================================================
+    // AndroidX
+    // ============================================================
 
     implementation 'androidx.core:core-ktx:1.2.0'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.2.0'
-
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+
+    def lifecycle_version = "2.6.2"
+
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
+
+
+    // ============================================================
+    // Navigation
+    // ============================================================
+
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.5.3'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.5.3'
+    implementation 'androidx.navigation:navigation-runtime-ktx:2.9.8'
+
+
+    // ============================================================
+    // Espresso / Android Instrumentation Tests
+    // ============================================================
+
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test:runner:1.7.0'
+    androidTestImplementation 'androidx.test:rules:1.7.0'
+
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.7.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-idling-resource:3.7.0'
+
+
+    // ============================================================
+    // JUnit
+    // ============================================================
+
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.4'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
 
 
-    //retrofit
-    implementation('com.squareup.retrofit2:retrofit:2.6.2')
-    implementation('com.squareup.retrofit2:converter-scalars:2.6.2')
-    implementation 'com.squareup.retrofit2:converter-gson:2.6.2'
+    // ============================================================
+    // Retrofit
+    // ============================================================
+
+    implementation 'com.squareup.retrofit2:retrofit:3.0.0'
+    implementation 'com.squareup.retrofit2:converter-scalars:3.0.0'
+    implementation 'com.squareup.retrofit2:converter-gson:3.0.0'
 
 
-    //OKHttp
-    implementation 'com.squareup.okhttp3:logging-interceptor:3.13.0'
+    // ============================================================
+    // OkHttp
+    // ============================================================
 
+    implementation 'com.squareup.okhttp3:okhttp:5.5.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:5.5.0'
+
+
+    // ============================================================
+    // MockWebServer
+    // ============================================================
+
+    androidTestImplementation 'com.squareup.okhttp3:mockwebserver3:5.5.0'
+
+    androidTestImplementation(
+            'com.squareup.retrofit2:converter-simplexml:3.0.0'
+    ) {
+        exclude group: 'stax', module: 'stax-api'
+        exclude group: 'stax', module: 'stax'
+        exclude group: 'xpp3', module: 'xpp3'
+    }
+
+    testImplementation 'com.squareup.okhttp3:mockwebserver3:5.5.0'
+
+    testImplementation(
+            'com.squareup.retrofit2:converter-simplexml:3.0.0'
+    ) {
+        exclude group: 'stax', module: 'stax-api'
+        exclude group: 'stax', module: 'stax'
+        exclude group: 'xpp3', module: 'xpp3'
+    }
+
+
+    // ============================================================
     // Coroutines
+    // ============================================================
+
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3'
 
 
+    // ============================================================
+    // Koin
+    // ============================================================
 
-    //Koin
-    ext.koin_version = '2.2.3'
-    // Koin AndroidX Fragment features
-    implementation "io.insert-koin:koin-androidx-fragment:$koin_version"
-    // Koin Android Scope features
-    implementation "io.insert-koin:koin-androidx-scope:$koin_version"
-    // Koin Android ViewModel features
-    implementation "io.insert-koin:koin-androidx-viewmodel:$koin_version"
-    // Koin Core features
+    ext.koin_version = '4.2.2'
+
     implementation "io.insert-koin:koin-core:$koin_version"
+    implementation "io.insert-koin:koin-compose-viewmodel:$koin_version"
+    implementation "io.insert-koin:koin-androidx-compose:$koin_version"
+    implementation "io.insert-koin:koin-compose-viewmodel-navigation:$koin_version"
 
-    //picassa
-    ext.picassa_version = '2.8'
-    implementation "com.squareup.picasso:picasso:$picassa_version"
-
-
-    // Mockk
-    testImplementation 'io.mockk:mockk:1.12.0'
-
-    // MockWebServer
-    testImplementation("com.squareup.okhttp3:mockwebserver:3.8.0")
-    testImplementation ('com.squareup.retrofit2:converter-simplexml:2.1.0'){
-        exclude group: 'stax', module: 'stax-api'
-        exclude group: 'stax', module: 'stax'
-        exclude group: 'xpp3', module: 'xpp3'
-    }
-
-    androidTestImplementation("com.squareup.okhttp3:mockwebserver:3.8.0")
-    androidTestImplementation ('com.squareup.retrofit2:converter-simplexml:2.1.0'){
-        exclude group: 'stax', module: 'stax-api'
-        exclude group: 'stax', module: 'stax'
-        exclude group: 'xpp3', module: 'xpp3'
-    }
-
-    // Koin testing tools
     testImplementation "io.insert-koin:koin-test:$koin_version"
     androidTestImplementation "io.insert-koin:koin-test:$koin_version"
 
-    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.0")
+    testImplementation 'org.hamcrest:hamcrest:3.0'
+    androidTestImplementation 'org.hamcrest:hamcrest:3.0'
 
+
+    // ============================================================
+    // Picasso
+    // ============================================================
+
+    ext.picassa_version = '2.8'
+
+    implementation "com.squareup.picasso:picasso:$picassa_version"
+
+
+    // ============================================================
+    // MockK
+    // ============================================================
+
+    testImplementation 'io.mockk:mockk:1.12.0'
 }

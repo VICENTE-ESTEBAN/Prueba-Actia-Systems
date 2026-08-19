@@ -16,4 +16,7 @@
     <string name="title_mandatory">El título es obligatorio</string>
     <string name="btn_search_caption">Buscar</string>
     <string name="error_on_request">"Se produjo un error en la petición. Inténtelo de nuevo"</string>
+
+    <string name="main_screen_title">"Búsqueda"</string>
+    <string name="detail_screen_title">"Detalle"</string>
 </resources>

@@ -12,7 +12,7 @@ class DomainModules : KoinModules {
     override fun get(): List<Module> {
         return listOf(getUseCases())
     }
-    private fun getUseCases() = module(override = true) {
+    private fun getUseCases() = module{
        single {
 
            val itemsRepository: ItemRepositoryAPI by inject()

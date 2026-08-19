@@ -19,7 +19,7 @@ class RepositoryModules(private val url:String) : KoinModules {
     }
 
     private fun getItemsRepository(url:String): Module {
-        return module(override = true) {
+        return module {
             single {
                 ItemRepositoryAPIImpl(
                     itemApiService = RetrofitOmdbProvider.createService(url,
@@ -33,7 +33,7 @@ class RepositoryModules(private val url:String) : KoinModules {
     }
 
     private fun getDetailItemRepository(url:String): Module {
-        return module(override = true) {
+        return module{
             single {
                 DetailItemRepositoryAPIImpl(
                     itemApiService =  RetrofitOmdbProvider.createService(url,

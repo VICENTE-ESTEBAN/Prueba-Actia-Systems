@@ -1,8 +1,7 @@
 package com.actia.myapplication.util
 
-import okhttp3.mockwebserver.MockWebServer
-import org.koin.core.context.loadKoinModules
-import org.koin.core.context.unloadKoinModules
+import mockwebserver3.MockWebServer
+
 
 interface IMockWebServer {
 
@@ -12,6 +11,6 @@ interface IMockWebServer {
         serverClosure(mockWebServer)
 
         // Finish web server
-        mockWebServer.shutdown()
+        mockWebServer.close()
     }
 }

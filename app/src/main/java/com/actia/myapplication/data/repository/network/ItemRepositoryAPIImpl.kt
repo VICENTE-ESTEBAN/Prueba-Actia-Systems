@@ -17,6 +17,8 @@ class ItemRepositoryAPIImpl(
             val response = itemApiService.getItemsByTitle(apiKey, title)
             Result.Success(mapItems(response))
         } catch (e: Exception) {
+            println("ItemRepositoryAPIImpl: $e")
+
             Result.Failure(e)
         }
     }

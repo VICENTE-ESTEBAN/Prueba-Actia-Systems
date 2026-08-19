@@ -13,14 +13,14 @@ import com.actia.myapplication.data.domain.model.Item
 import com.actia.myapplication.databinding.FragmentDetailBinding
 import com.actia.myapplication.ui.main.viewmodel.MainViewModel
 import com.actia.myapplication.util.Constants
-import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
 
 
 class DetailFragment : Fragment() {
 
     private lateinit var binding:FragmentDetailBinding
 
-    private val mViewModel: MainViewModel by sharedViewModel()
+    private val mViewModel: MainViewModel by activityViewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,7 +55,7 @@ class DetailFragment : Fragment() {
                 )
             }
         }
-
+        @Suppress("DEPRECATION")
         val data = args!!.getParcelable<Item>(Constants.KEY_BUNDLE_ITEM)
         if(!mViewModel.canGetDetail(data)) {
             showToastAndExit(resources.getString(R.string.no_data_movie))
@@ -73,12 +73,14 @@ class DetailFragment : Fragment() {
 
     private fun showToastAndExit(textToShow:String){
         Toast.makeText(context, textToShow, Toast.LENGTH_LONG).show()
+        @Suppress("DEPRECATION")
         activity?.onBackPressed()
     }
 
     private fun configToolBar() {
         val mToolbar: Toolbar = binding.toolbar
         mToolbar.setNavigationOnClickListener {
+            @Suppress("DEPRECATION")
             activity?.onBackPressed()
         }
     }

@@ -16,34 +16,27 @@ import com.actia.myapplication.data.domain.usecase.GetItemsUseCase
 import com.actia.myapplication.ui.base.viewmodel.BaseViewModel
 import com.actia.myapplication.util.Constants
 import com.actia.myapplication.util.Constants.SHOW_ALL_YEARS
-import com.actia.myapplication.util.IdlingResourceCounter.countingIdlingResource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import org.koin.core.component.KoinApiExtension
-import org.koin.core.component.inject
 
-@OptIn(KoinApiExtension::class)
-class MainViewModel(application: Application) : BaseViewModel(application)
-{
-    companion object
-    {
-        val TAG = MainViewModel::class.java.simpleName
+class MainViewModel(
+    application: Application,
+    val getItemsUseCase: GetItemsUseCase,
+    val getDetailItemByImdbUseCase: GetDetailItemByImdbUseCase,
+    val getDetailItemByTitleUseCase: GetDetailItemByTitleUseCase
+) : BaseViewModel(application) {
+    companion object {
+        val TAG: String = MainViewModel::class.java.simpleName
     }
 
-
-    private val getItemsUseCase:GetItemsUseCase by inject()
-
-    val getYearsLiveData : ObservableArrayList<String> = ObservableArrayList<String>()
-    val selectedYearLiveData :MutableLiveData<Int> = MutableLiveData<Int>(-1)
-
-
-    private val getDetailItemByImdbUseCase: GetDetailItemByImdbUseCase by inject()
-    private val getDetailItemByTitleUseCase: GetDetailItemByTitleUseCase by inject()
-    private val getFullListItemsLiveData: MutableLiveData<List<Item>?> = MutableLiveData(emptyList())
+    val getYearsLiveData: ObservableArrayList<String> = ObservableArrayList<String>()
+    val selectedYearLiveData: MutableLiveData<Int> = MutableLiveData<Int>(-1)
+    private val getFullListItemsLiveData: MutableLiveData<List<Item>?> =
+        MutableLiveData(emptyList())
 
 
-    val getItemsLiveData :LiveData<List<Item>> = selectedYearLiveData.map { yearSelected ->
+    val getItemsLiveData: LiveData<List<Item>> = selectedYearLiveData.map { yearSelected ->
         val years = getYearsLiveData
         (if (years.isNotEmpty() && yearSelected != null && yearSelected < years.size) {
             val year = years[yearSelected]
@@ -54,94 +47,97 @@ class MainViewModel(application: Application) : BaseViewModel(application)
     }
 
     private val _hasErrorOnRequestiveData: MutableLiveData<Boolean> = MutableLiveData(false)
-    val hasErrorOnRequestiveData :LiveData<Boolean> = _hasErrorOnRequestiveData
+    val hasErrorOnRequestiveData: LiveData<Boolean> = _hasErrorOnRequestiveData
 
 
     private val _getDetailItemLiveData: MutableLiveData<DetailItem?> = MutableLiveData(null)
-    val getDetailItemLiveData :LiveData<DetailItem?> = _getDetailItemLiveData
+    val getDetailItemLiveData: LiveData<DetailItem?> = _getDetailItemLiveData
 
-
-
-    fun loadItems(title:String){
+    fun loadItems(title: String) {
 
         getYearsLiveData.clear()
         getFullListItemsLiveData.value = emptyList()
 
-        countingIdlingResource.increment()
-
         viewModelScope.launch {
-            getItemsUseCase.execute(Constants.APIKEY, title)
-                .flowOn(Dispatchers.IO)
-                .collect {
-                    handleGetItemsUseCase(it)
-                    countingIdlingResource.decrement()
-                }
+            try {
+                getItemsUseCase.execute(Constants.APIKEY, title)
+                    .flowOn(Dispatchers.IO)
+                    .collect {
+                        handleGetItemsUseCase(it)
+                    }
+            } finally {
+                //IdlingResourceCounter.countingIdlingResource.decrement()
+            }
         }
     }
 
-    fun canGetDetail(data:Item?):Boolean{
+    fun canGetDetail(data: Item?): Boolean {
         _getDetailItemLiveData.value = null
-        return if(!data?.imdb.isNullOrEmpty()) {
-            getDetailItemByImdb(data?.imdb!!)
+        return if (!data?.imdb.isNullOrEmpty()) {
+            getDetailItemByImdb(data.imdb)
             true
-        } else if(!data?.title.isNullOrEmpty()) {
-            getDetailItemByTitle(data?.title!!)
+        } else if (!data?.title.isNullOrEmpty()) {
+            getDetailItemByTitle(data.title)
             true
         } else {
             false
         }
     }
 
-    private fun getDetailItemByImdb(imdb:String) {
-        countingIdlingResource.increment()
+    private fun getDetailItemByImdb(imdb: String) {
+        //IdlingResourceCounter.countingIdlingResource.increment()
         viewModelScope.launch {
-            getDetailItemByImdbUseCase.execute(Constants.APIKEY, imdb)
-                .flowOn(Dispatchers.IO)
-                .collect {
-                    handleGetDetailItemUseCase(it)
-                    countingIdlingResource.decrement()
-                }
+            try {
+                getDetailItemByImdbUseCase.execute(Constants.APIKEY, imdb)
+                    .flowOn(Dispatchers.IO)
+                    .collect {
+                        handleGetDetailItemUseCase(it)
+                    }
+            } finally {
+                //IdlingResourceCounter.countingIdlingResource.decrement()
+            }
         }
     }
 
     private fun getYearsFromItem(): List<String> {
         return getFullListItemsLiveData.value?.mapNotNull {
             it.releaseYear
-        }?.distinct()?: emptyList()
+        }?.distinct() ?: emptyList()
     }
 
-    private fun filterItemsByYear(year:String): List<Item> {
-        return if(year == SHOW_ALL_YEARS)
-        {
+    private fun filterItemsByYear(year: String): List<Item> {
+        return if (year == SHOW_ALL_YEARS) {
             getFullListItemsLiveData.value
-        }
-        else {
+        } else {
             getFullListItemsLiveData.value?.filter {
                 it.releaseYear == year
             }?.toList()
         } ?: emptyList()
     }
 
-    private fun getDetailItemByTitle(title:String) {
-        countingIdlingResource.increment()
+    private fun getDetailItemByTitle(title: String) {
+        //IdlingResourceCounter.countingIdlingResource.increment()
 
         viewModelScope.launch {
-            getDetailItemByTitleUseCase.execute(Constants.APIKEY, title)
-                .flowOn(Dispatchers.IO)
-                .collect {
-                    handleGetDetailItemUseCase(it)
-                    countingIdlingResource.decrement()
-                }
+            try {
+                getDetailItemByTitleUseCase.execute(Constants.APIKEY, title)
+                    .flowOn(Dispatchers.IO)
+                    .collect {
+                        handleGetDetailItemUseCase(it)
+                    }
+            } finally {
+                //IdlingResourceCounter.countingIdlingResource.decrement()
+            }
         }
     }
 
     private fun handleGetDetailItemUseCase(result: Result<DetailItem>) {
-        when (result)
-        {
-            is Result.Success<DetailItem>->{
+        when (result) {
+            is Result.Success<DetailItem> -> {
                 _getDetailItemLiveData.value = result.value
             }
-            is Result.Failure<DetailItem>->{
+
+            is Result.Failure<DetailItem> -> {
                 sendError(result.throwable.message)
             }
         }
@@ -149,17 +145,17 @@ class MainViewModel(application: Application) : BaseViewModel(application)
 
     private fun handleGetItemsUseCase(result: Result<List<Item>>) {
 
-        when (result)
-        {
-            is Result.Success<List<Item>>->{
+        when (result) {
+            is Result.Success<List<Item>> -> {
 
                 getFullListItemsLiveData.value = result.value
 
                 getYearsLiveData.addAll(getYearsFromItem())
-                if(result.value.isNotEmpty())
+                if (result.value.isNotEmpty())
                     getYearsLiveData.add(0, SHOW_ALL_YEARS)
             }
-            is Result.Failure<List<Item>>->{
+
+            is Result.Failure<List<Item>> -> {
                 sendError(result.throwable.message)
 
                 getYearsLiveData.clear()

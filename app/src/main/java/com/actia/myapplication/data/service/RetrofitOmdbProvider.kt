@@ -13,21 +13,32 @@ object RetrofitOmdbProvider {
     private lateinit var retrofit:Retrofit
 
     fun <S> createService(baseUrl:String, serviceClass: Class<S>): S {
-        val httpClient = OkHttpClient.Builder()
+
+
 
         val logging = HttpLoggingInterceptor()
         logging.level = HttpLoggingInterceptor.Level.BODY
 
-        httpClient.addInterceptor(logging)
-
-        val pool = ConnectionPool(5, 60000, TimeUnit.MILLISECONDS)
-        httpClient.connectionPool(pool)
+        val httpClient = OkHttpClient.Builder()
+            .addInterceptor(logging)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .connectionPool(
+                ConnectionPool(
+                    5,
+                    60,
+                    TimeUnit.SECONDS
+                )
+            )
+            .build()
 
         retrofit = Retrofit.Builder()
             .baseUrl(baseUrl)
-            .client(httpClient.build())
+            .client(httpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+
         return retrofit.create(serviceClass)
     }
 }
